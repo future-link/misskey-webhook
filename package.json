@@ -1,0 +1,22 @@
+{
+  "name": "misskey-webhook",
+  "scripts": {
+    "start": "node --experimental-modules src/main.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/future-link/misskey-webhook.git"
+  },
+  "author": "otofune <otofune@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/future-link/misskey-webhook/issues"
+  },
+  "homepage": "https://github.com/future-link/misskey-webhook#readme",
+  "private": true,
+  "dependencies": {
+    "dotenv-safe": "^4.0.4",
+    "koa": "^2.3.0",
+    "mongoose": "^4.11.13"
+  }
+}
