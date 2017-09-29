@@ -1,6 +1,8 @@
+import mongoose from 'mongoose'
 
+import db from '../db/mongodb'
 
-export default mongoose.model('OutgoingHook', new mongoose.Schema({
+export default db.model('OutgoingHook', new mongoose.Schema({
   uri: {
     type: String,
     required: true
