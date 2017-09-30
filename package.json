@@ -19,6 +19,8 @@
     "koa": "^2.3.0",
     "koa-router": "^7.2.1",
     "koa-static": "^4.0.1",
-    "mongoose": "^4.11.13"
+    "mongoose": "^4.11.13",
+    "redis": "^2.8.0",
+    "redis-js": "^0.1.2"
   }
 }
