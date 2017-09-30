@@ -28,7 +28,8 @@ const config = {
   },
   port: process.env.MW_PORT,
   flags: {
-    proxy: process.env.MW_PROXY == 'true'
+    proxy: process.env.MW_PROXY == 'true',
+    verbose: process.argv.indexOf('--verbose') !== -1
   }
 }
 
