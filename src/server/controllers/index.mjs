@@ -29,10 +29,11 @@ router.use(bodyParser({
 
 const schemes = [ 'bearer' ]
 const authenticater = {
-  bearer: token => Token.findById({ token }).populate('account')
+  bearer: token => Token.findOne({ token }).populate('account')
 }
 router.use(async (ctx, next) => {
   ctx.state.account = null
+  ctx.state.token = null
 
   if (!ctx.headers['authorization']) return await next()
 
@@ -41,10 +42,11 @@ router.use(async (ctx, next) => {
   const value = as.join(' ')
   if (!schemes.includes(scheme)) ctx.throw(400, 'unsupported authorization scheme specified.')
 
-  const account = await authenticater[scheme](value)
-  if (!account) ctx.throw(400, 'incorrect authentication information specified.')
+  const token = await authenticater[scheme](value)
+  if (!token) ctx.throw(400, 'incorrect authentication information specified.')
 
-  ctx.state.account = account
+  ctx.state.account = token.account
+  ctx.state.token = token
   await next()
 })
 
