@@ -16,10 +16,20 @@ const validator = config => {
 const config = {
   mongodb: process.env.MW_MONGODB_URI,
   api: {
-    uri: process.env.MW_API_URI,
+    uri:
+      process.env.MW_API_URI ?
+        (
+          process.env.MW_API_URI.endsWith('/') ?
+            process.env.MW_API_URI :
+            process.env.MW_API_URI + '/'
+        ) :
+        null,
     key: process.env.MW_API_KEY
   },
-  port: process.env.MW_PORT
+  port: process.env.MW_PORT,
+  flags: {
+    proxy: process.env.MW_PROXY == 'true'
+  }
 }
 
 const errors = validator(config)

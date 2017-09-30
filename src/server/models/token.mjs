@@ -1,11 +1,14 @@
 import mongoose from 'mongoose'
+import uuid from 'uuid/v4'
 
 import db from '../db/mongodb'
 
-export default db.model('OutgoingHook', new mongoose.Schema({
-  uri: {
+export default db.model('Token', new mongoose.Schema({
+  token: {
     type: String,
-    required: true
+    required: true,
+    unique: true,
+    default: uuid
   },
   account: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,11 +16,10 @@ export default db.model('OutgoingHook', new mongoose.Schema({
     index: true,
     ref: 'Account'
   },
+  context: mongoose.Schema.Types.Mixed,
   created_at: {
     type: Date,
     default: Date.now,
     required: true
-  },
-  // 署名キー (GitHubのwebhookでのHMAC署名を模倣する予定)
-  key: String
+  }
 }))

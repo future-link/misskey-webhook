@@ -6,10 +6,14 @@ import serve from 'koa-static'
 
 import controllers from './controllers'
 
+import config from '../config'
+
 const app = new Koa()
 const router = new Router()
 
-router.use('/api/v0', controllers.routes())
+app.proxy = config.flags.proxy
+
+router.use('/api/v0', controllers.routes(), controllers.allowedMethods())
 app.use(router.routes())
 app.use(serve('dist'))
 

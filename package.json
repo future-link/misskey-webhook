@@ -17,10 +17,13 @@
   "dependencies": {
     "dotenv-safe": "^4.0.4",
     "koa": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.2.1",
     "koa-static": "^4.0.1",
     "mongoose": "^4.11.13",
     "redis": "^2.8.0",
-    "redis-js": "^0.1.2"
+    "redis-js": "^0.1.2",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
   }
 }
