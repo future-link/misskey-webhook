@@ -17,7 +17,7 @@ const router = new Router()
 app.proxy = config.flags.proxy
 
 app.use(async (ctx, next) => {
-  logger.log(`${ctx.method} ${ctx.path}, '${(ctx.ips.length > 0 ? ctx.ips : [ ctx.ip ]).join("', '")}', '${ctx.headers['user-agent']}'`)
+  logger.log(`${ctx.method} ${ctx.path}, '${(ctx.ips.length > 0 ? ctx.ips : [ ctx.ip ]).join(" > ")}', '${ctx.headers['user-agent']}'`)
   await next()
 })
 router.use('/api/v0', controllers.routes(), controllers.allowedMethods())
