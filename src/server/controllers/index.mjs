@@ -22,6 +22,18 @@ router.use(async (ctx, next) => {
   }
 })
 
+// CORS
+router.use(async (ctx,next) => {
+  ctx.set('Access-Control-Allow-Origin', '*')
+  if (ctx.method === 'OPTIONS' && ctx.header['access-control-request-method']) {
+    ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    ctx.set('Access-Control-Allow-Headers', 'Content-Type')
+    ctx.status = 204
+    return
+  }
+  await next()
+})
+
 router.use(bodyParser({
   enableTypes: [ 'json' ],
   onerror: (e, ctx) => {
@@ -79,10 +91,7 @@ router.post('/session', async ctx => {
     }
   })
   await Promise.all([account.save(), token.save()])
-  ctx.body = {
-    token: token.token,
-    account: user
-  }
+  ctx.body = { token: token.token }
 })
 
 router.get('/account', async ctx => {

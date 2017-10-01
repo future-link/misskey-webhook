@@ -20,7 +20,7 @@ app.use(async (ctx, next) => {
   logger.log(`${ctx.method} ${ctx.path}, '${(ctx.ips.length > 0 ? ctx.ips : [ ctx.ip ]).join(" > ")}', '${ctx.headers['user-agent']}'`)
   await next()
 })
-router.use('/api/v0', controllers.routes(), controllers.allowedMethods())
+router.use('/api/v0', controllers.routes())
 app.use(router.routes())
 app.use(serve('dist'))
 
