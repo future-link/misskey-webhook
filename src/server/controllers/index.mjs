@@ -3,19 +3,21 @@ import bodyParser from 'koa-bodyparser'
 
 import webhook from './webhook'
 
-import { callAPI, denyNonAuthorized } from '../tools'
+import { callAPI, denyNonAuthorized, Logger } from '../tools'
 import { Account, Token } from '../models'
 
 const router = new Router()
+const logger = new Logger()
 
 router.use(async (ctx, next) => {
   try {
     await next()
   } catch (e) {
-    console.error(e)
-    ctx.status = e.expose ? e.status : 500
+    const expose = e.expose || (e.status && e.message)
+    logger[expose ? 'detail' : 'error'](e.stack)
+    ctx.status = expose ? e.status : 500
     ctx.body = {
-      message: e.expose ? e.message : 'some error'
+      message: expose ? e.message : 'an unexpected error has occurred, please contact to operators.'
     }
   }
 })
@@ -54,18 +56,16 @@ router.all('(.*)', async (...rest) => {
   const ctx = rest.shift()
   const next = rest.pop()
   await next()
-  if (ctx.status === 404 && !ctx.body) {
-    ctx.status = 404
-    ctx.body = {
-      message: 'there is no content available.'
-    }
-  }
+  if (ctx.status === 404 && !ctx.body) ctx.throw(404, 'there is no content available.')
 })
 
 router.post('/session', async ctx => {
   const user = await callAPI('/login', {
     'screen-name': ctx.request.body.account,
     'password': ctx.request.body.password
+  }).catch(e => {
+    if (e.name === 'StatusCodeError') ctx.throw(400, 'maybe screen-name or password is, or both are incorrect.')
+    throw e
   })
   const account = (await Account.findById(user.id)) || new Account({
     _id: user.id
@@ -75,7 +75,7 @@ router.post('/session', async ctx => {
     account: user.id,
     context: {
       headers: ctx.header,
-      ips: ctx.ips || [ctx.ip]
+      ips: ctx.ips.length > 0 ? ctx.ips : [ctx.ip]
     }
   })
   await Promise.all([account.save(), token.save()])
