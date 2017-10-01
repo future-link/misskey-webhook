@@ -99,6 +99,6 @@ router.get('/account', async ctx => {
   ctx.body = ctx.state.account.cache
 })
 
-router.use('/webhook', webhook.routes())
+router.use('/webhooks', webhook.routes())
 
 export default router
