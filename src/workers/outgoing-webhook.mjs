@@ -103,6 +103,7 @@ export default class extends EventEmitter {
 
       delete message.value.cursor
       delete message.value.isRead
+      delete message.value.app
       Promise.all(Object.values(this.outgoings[message.target]).map(oh => request({
         url: oh.uri,
         body: JSON.stringify(message.value),
