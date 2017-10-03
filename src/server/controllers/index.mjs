@@ -71,7 +71,7 @@ router.all('(.*)', async (...rest) => {
   if (ctx.status === 404 && !ctx.body) ctx.throw(404, 'there is no content available.')
 })
 
-router.post('/session', async ctx => {
+router.post('/sessions', async ctx => {
   const user = await callAPI('/login', {
     'screen-name': ctx.request.body.account,
     'password': ctx.request.body.password
