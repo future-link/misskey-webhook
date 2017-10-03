@@ -1,7 +1,8 @@
 {
   "name": "misskey-webhook",
   "scripts": {
-    "start": "node --experimental-modules src/main.mjs"
+    "start": "node --experimental-modules src/main.mjs",
+    "debug": "node --experimental-modules src/main.mjs --verbose"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "redis": "^2.8.0",
     "redis-js": "^0.1.2",
     "request": "^2.83.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "ws": "^3.2.0"
   }
 }

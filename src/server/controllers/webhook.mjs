@@ -1,10 +1,12 @@
 import Router from 'koa-router'
+import mongoose from 'mongoose'
 
-import redis from '../db/redis'
+import createRedisClient from '../db/redis'
 import { OutgoingWebhook } from '../models'
 import { denyNonAuthorized } from '../tools'
 
 const router = new Router()
+const redis = createRedisClient()
 
 router.get('/outgoings', async ctx => {
   denyNonAuthorized(ctx)
@@ -26,6 +28,7 @@ router.post('/outgoings', async ctx => {
   redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
     type: 'add',
     id: oh._id.toString(),
+    account: ctx.state.account._id.toString(),
     document: oh.toObject()
   }))
 
@@ -34,6 +37,8 @@ router.post('/outgoings', async ctx => {
 
 router.delete('/outgoings/:id', async ctx => {
   denyNonAuthorized(ctx)
+
+  const id = ctx.params.id
 
   // ENOENT: an error, express 'there is no entry has a given ID'.
   const ENOENT = [404, 'there is no outgoing hook that has a given ID.']
@@ -44,11 +49,11 @@ router.delete('/outgoings/:id', async ctx => {
   // should be hidden
   if (!oh.account.equals(ctx.state.account._id)) ctx.throw(...ENOENT)
 
-  await oh.delete()
+  await oh.remove()
   redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
     type: 'delete',
-    id: oh._id.toString(),
-    document: oh.toObject()
+    id,
+    account: ctx.state.account._id.toString()
   }))
 
   ctx.status = 204
@@ -56,6 +61,8 @@ router.delete('/outgoings/:id', async ctx => {
 
 router.put('/outgoings/:id', async ctx => {
   denyNonAuthorized(ctx)
+
+  const id = ctx.params.id
 
   // ENOENT: an error, express 'there is no entry has a given ID'.
   const ENOENT = [404, 'there is no outgoing hook that has a given ID.']
@@ -75,6 +82,7 @@ router.put('/outgoings/:id', async ctx => {
   redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
     type: 'update',
     id: oh._id.toString(),
+    account: ctx.state.account._id.toString(),
     document: oh.toObject()
   }))
 

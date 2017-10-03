@@ -18,6 +18,12 @@ export default db.model('OutgoingWebhook', new mongoose.Schema({
     default: Date.now,
     required: true
   },
+  health: {
+    type: Boolean,
+    required: true,
+    index: true,
+    default: true
+  },
   // 署名キー (GitHubのwebhookでのHMAC署名を模倣する予定)
   key: String
 }))
