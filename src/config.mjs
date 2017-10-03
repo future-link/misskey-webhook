@@ -29,7 +29,8 @@ const config = {
   port: process.env.MW_PORT,
   flags: {
     proxy: process.env.MW_PROXY == 'true',
-    verbose: process.argv.indexOf('--verbose') !== -1
+    verbose: process.argv.indexOf('--verbose') !== -1,
+    clustering: process.argv.indexOf('--clustering') !== -1
   }
 }
 

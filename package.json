@@ -1,7 +1,7 @@
 {
   "name": "misskey-webhook",
   "scripts": {
-    "start": "node --experimental-modules src/main.mjs",
+    "start": "node --experimental-modules src/main.mjs --clustering",
     "debug": "node --experimental-modules src/main.mjs --verbose"
   },
   "repository": {
