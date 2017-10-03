@@ -1,5 +1,6 @@
 import Router from 'koa-router'
 
+import redis from '../db/redis'
 import { OutgoingWebhook } from '../models'
 import { denyNonAuthorized } from '../tools'
 
@@ -12,13 +13,71 @@ router.get('/outgoings', async ctx => {
 
 router.post('/outgoings', async ctx => {
   denyNonAuthorized(ctx)
+
   if (Object.keys(ctx.request.body).length === 0) ctx.throw(400, 'bad request body specified.')
   if (!ctx.request.body.uri) ctx.throw(400, 'uri field must be specified.')
+
   const oh = new OutgoingWebhook({
     uri: ctx.request.body.uri,
     account: ctx.state.account._id
   })
+
   await oh.save()
+  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
+    type: 'add',
+    id: oh._id.toString(),
+    document: oh.toObject()
+  }))
+
+  ctx.status = 204
+})
+
+router.delete('/outgoings/:id', async ctx => {
+  denyNonAuthorized(ctx)
+
+  // ENOENT: an error, express 'there is no entry has a given ID'.
+  const ENOENT = [404, 'there is no outgoing hook that has a given ID.']
+
+  if (!mongoose.Types.ObjectId.isValid(id)) ctx.throw(...ENOENT)
+  const oh = await OutgoingWebhook.findById(id)
+  if (!oh) ctx.throw(...ENOENT)
+  // should be hidden
+  if (!oh.account.equals(ctx.state.account._id)) ctx.throw(...ENOENT)
+
+  await oh.delete()
+  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
+    type: 'delete',
+    id: oh._id.toString(),
+    document: oh.toObject()
+  }))
+
+  ctx.status = 204
+})
+
+router.put('/outgoings/:id', async ctx => {
+  denyNonAuthorized(ctx)
+
+  // ENOENT: an error, express 'there is no entry has a given ID'.
+  const ENOENT = [404, 'there is no outgoing hook that has a given ID.']
+
+  if (!mongoose.Types.ObjectId.isValid(id)) ctx.throw(...ENOENT)
+  const oh = await OutgoingWebhook.findById(id)
+  if (!oh) ctx.throw(...ENOENT)
+  // should be hidden
+  if (!oh.account.equals(ctx.state.account._id)) ctx.throw(...ENOENT)
+
+  if (Object.keys(ctx.request.body).length === 0) ctx.throw(400, 'bad request body specified.')
+  if (!ctx.request.body.uri) ctx.throw(400, 'uri field must be specified.')
+
+  oh.uri = ctx.request.body.uri
+
+  await oh.save()
+  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
+    type: 'update',
+    id: oh._id.toString(),
+    document: oh.toObject()
+  }))
+
   ctx.status = 204
 })
 

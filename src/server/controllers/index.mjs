@@ -94,6 +94,12 @@ router.post('/session', async ctx => {
   ctx.body = { token: token.token }
 })
 
+router.delete('/session', async ctx => {
+  denyNonAuthorized(ctx)
+  await ctx.state.token.remove()
+  ctx.status = 204
+})
+
 router.get('/account', async ctx => {
   denyNonAuthorized(ctx)
   ctx.body = ctx.state.account.cache
