@@ -19,6 +19,7 @@ export default class extends EventEmitter {
   createConnection (accountId) {
     return new Promise((res, rej) => {
       const conn = new ws(URL.resolve(wsURI, `streams/home?passkey=${config.api.key}&user-id=${accountId}`))
+      const pinger = () => conn.ping()
       conn.on('error', e => {
         rej(e)
       })
@@ -37,12 +38,10 @@ export default class extends EventEmitter {
         this.connections[accountId] = await this.createConnection(accountId)
       })
       conn.on('open', () => {
+        // ping every 30s
+        setInterval(pinger, 1000 * 30)
         res(conn)
       })
-      const pinger = () => {
-        conn.ping()
-      }
-      setInterval(pinger, 1000 * 30)
     })
   }
 
