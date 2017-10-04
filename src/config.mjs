@@ -10,6 +10,7 @@ const validator = config => {
   if (!config.api.uri) errors.push('[MW_API_URI] must set the URI to connect misskey-api.')
   if (!config.api.key) errors.push('[MW_API_KEY] must set the API key to connect misskey-api.')
   if (!config.mongodb) errors.push('[MW_MONGODB_URI] must set the MongoDB URI.')
+  if (config.flags.clustering && !config.redis) errors.push('[MW_REDIS_URI] must set the Redis URI with clustering mode.')
   return errors
 }
 
@@ -31,7 +32,8 @@ const config = {
     proxy: process.env.MW_PROXY == 'true',
     verbose: process.argv.indexOf('--verbose') !== -1,
     clustering: process.argv.indexOf('--clustering') !== -1
-  }
+  },
+  redis: process.env.MW_REDIS_URI || null
 }
 
 const errors = validator(config)
