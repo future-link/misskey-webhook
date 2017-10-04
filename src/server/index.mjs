@@ -4,7 +4,7 @@ import Koa from 'koa'
 import Router from 'koa-router'
 import serve from 'koa-static'
 
-import controllers from './controllers'
+import APIv0 from './api_v0'
 import { Logger } from './tools'
 
 import config from '../config'
@@ -20,7 +20,7 @@ app.use(async (ctx, next) => {
   logger.log(`${ctx.method} ${ctx.path}, '${(ctx.ips.length > 0 ? ctx.ips : [ ctx.ip ]).join(" > ")}', '${ctx.headers['user-agent']}'`)
   await next()
 })
-router.use('/api/v0', controllers.routes())
+router.use('/api/v0', APIv0.routes())
 app.use(router.routes())
 app.use(serve('dist'))
 
