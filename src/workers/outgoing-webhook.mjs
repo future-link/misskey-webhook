@@ -23,7 +23,7 @@ export default class extends EventEmitter {
         try {
           conn.ping()
         } catch (e) {
-          logger.log(`${accountId} | failture to ping by an error '${e.message}'`)
+          logger.log(`#${accountId} | failture to ping by an error '${e.message}'`)
         }
       }
       conn.on('error', e => {
@@ -44,6 +44,7 @@ export default class extends EventEmitter {
         this.connections[accountId] = await this.createConnection(accountId)
       })
       conn.on('open', () => {
+        logger.log(`#${accountId} | established websocket connection`)
         // ping every 30s
         setInterval(pinger, 1000 * 30)
         res(conn)
