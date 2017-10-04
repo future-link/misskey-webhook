@@ -81,7 +81,7 @@ router.put('/outgoings/:id', async ctx => {
   await oh.save()
   redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
     type: 'update',
-    id: oh._id.toString(),
+    id,
     account: ctx.state.account._id.toString(),
     document: oh.toObject()
   }))

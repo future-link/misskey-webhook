@@ -2,14 +2,18 @@ import ws from 'ws'
 import URL from 'url'
 import EventEmitter from 'events'
 import request from 'request-promise-native'
+import requestErrors from 'request-promise-native/errors'
 
-import { OutgoingWebhook, OutgoingWebhookDeliveryHistory } from '../server/models'
+import { OutgoingWebhook, OutgoingWebhookDeliveryHistory, OutgoingWebhookFailtureHistory } from '../server/models'
 import createRedisClient from '../server/db/redis'
 import config from '../config'
 import { Logger } from '../server/tools'
 
 const wsURI = config.api.uri.replace('http', 'ws')
-const logger = new Logger('worker#outgoingWebhooks')
+const logger = new Logger('outgoingWebhooksWorker')
+
+process.on('unhandledRejection', e => console.log(e.stack));
+
 
 export default class extends EventEmitter {
   async init () {
@@ -109,19 +113,43 @@ export default class extends EventEmitter {
         body: JSON.stringify(message.value),
         method: 'post',
         resolveWithFullResponse: true,
-        encoding: null
+        encoding: null,
+        headers: {
+          'content-type': 'application/json'
+        }
       }).catch(async e => {
-        await OutgoingWebhook.findByIdAndUpdate(oh._id, {
-          health: false
+        const owfh = new OutgoingWebhookFailtureHistory({
+          target: oh._id,
+          stack: e.stack
         })
-        // disable unhealth hook
-        this.redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
-          type: 'delete',
-          id: oh._id,
-          account: message.target
-        }))
-        return e.response
+        logger.log(`#${message.target} | request error happned for incomming webhook #${oh._id}.`)
+        logger[e instanceof requestErrors.StatusCodeError ? 'detail' : 'error'](e.stack)
+
+        // disable a hook if StatusCodeError happened or it has failed over 3 times (includes 'owfh' genereted in this time)
+        if (
+          (e instanceof requestErrors.StatusCodeError) ||
+          (await OutgoingWebhookFailtureHistory.count({ target: oh._id }) >= 2)
+        ) {
+          await Promise.all([
+            OutgoingWebhook.findByIdAndUpdate(oh._id, {
+              health: false
+            }),
+            owfh.save()
+          ])
+          this.redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
+            type: 'delete',
+            id: oh._id,
+            account: message.target
+          }))
+        } else {
+          await owfh.save()
+        }
+
+        // chain
+        if (e instanceof requestErrors.StatusCodeError) return e.response
+        return
       }).then(async r => {
+        if (!r) return
         const ohdh = new OutgoingWebhookDeliveryHistory({
           target: oh._id,
           status_code: r.statusCode,
@@ -129,6 +157,9 @@ export default class extends EventEmitter {
           headers: r.headers
         })
         return ohdh.save()
+      }).catch(e => {
+        logger.log(`#${message.target} | unknown error happened for incomming webhook #${oh._id}!`)
+        logger.error(e.stack)
       })))
     })
   }

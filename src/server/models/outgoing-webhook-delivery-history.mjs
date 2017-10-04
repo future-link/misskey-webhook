@@ -25,5 +25,6 @@ export default db.model('OutgoingWebhookDeliveryHistory', new mongoose.Schema({
     type: Buffer
   }
 }, {
-  capped: 1024
+  // 256KB
+  capped: 1024 * 1024 * 256
 }))
