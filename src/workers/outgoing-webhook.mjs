@@ -19,7 +19,13 @@ export default class extends EventEmitter {
   createConnection (accountId) {
     return new Promise((res, rej) => {
       const conn = new ws(URL.resolve(wsURI, `streams/home?passkey=${config.api.key}&user-id=${accountId}`))
-      const pinger = () => conn.ping()
+      const pinger = () => {
+        try {
+          conn.ping()
+        } catch (e) {
+          logger.log(`${accountId} | failture to ping by an error '${e.message}'`)
+        }
+      }
       conn.on('error', e => {
         rej(e)
       })
