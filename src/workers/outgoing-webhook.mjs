@@ -16,6 +16,36 @@ process.on('unhandledRejection', e => console.log(e.stack));
 
 
 export default class extends EventEmitter {
+  createConnection (accountId) {
+    return new Promise((res, rej) => {
+      const conn = new ws(URL.resolve(wsURI, `streams/home?passkey=${config.api.key}&user-id=${accountId}`))
+      conn.on('error', e => {
+        rej(e)
+      })
+      conn.on('message', (m) => {
+        const message = JSON.parse(m)
+        if (message.type !== 'notification') return
+        this.emit('message', JSON.stringify({
+          target: accountId,
+          value: message.value
+        }))
+      })
+      conn.on('close', async () => {
+        clearInterval(pinger)
+        if (Object.keys(this.outgoings[accountId]).length === 0) return
+        logger.log(`#${accountId} | will re-establish websocket connection`)
+        this.connections[accountId] = await this.createConnection(accountId)
+      })
+      conn.on('open', () => {
+        res(conn)
+      })
+      const pinger = () => {
+        conn.ping()
+      }
+      setInterval(pinger, 1000 * 30)
+    })
+  }
+
   async init () {
     this.redis = createRedisClient()
     /**
@@ -41,28 +71,13 @@ export default class extends EventEmitter {
       this.outgoings[accountId][d._id.toString()] = d.toObject()
     }))
     // initialize this.connections
-    await Promise.all(Object.keys(this.outgoings).map(accountId => new Promise((res, rej) => {
+    await Promise.all(Object.keys(this.outgoings).map(async accountId => {
       logger.log(`#${accountId} | will establish websocket connection`)
-      const conn = new ws(URL.resolve(wsURI, `streams/home?passkey=${config.api.key}&user-id=${accountId}`))
-      conn.on('error', e => {
-        rej(e)
-      })
-      conn.on('message', (m) => {
-        const message = JSON.parse(m)
-        if (message.type !== 'notification') return
-        this.emit('message', JSON.stringify({
-          target: accountId,
-          value: message.value
-        }))
-      })
-      this.connections[accountId] = conn
-      conn.on('open', () => {
-        res()
-      })
-    })))
+      this.connections[accountId] = await this.createConnection(accountId)
+    }))
     // registry redis handler
     this.redis.subscribe('mw:events:webhooks:outgoings')
-    this.redis.on('message', (ch, payload) => {
+    this.redis.on('message', async (ch, payload) => {
       if (ch !== 'mw:events:webhooks:outgoings') throw new Error(`redis connection seem to be subscribed to ${ch}, what's happened...?`)
       const message = JSON.parse(payload)
       const accountId = message.account
@@ -84,19 +99,7 @@ export default class extends EventEmitter {
         delete this.connections[accountId]
       } else if (!(accountId in this.connections)) {
         logger.log(`#${accountId} | will establish websocket connection`)
-        const conn = new ws(URL.resolve(wsURI, `streams/home?passkey=${config.api.key}&user-id=${accountId}`))
-        conn.on('error', e => {
-          throw e
-        })
-        conn.on('message', (m) => {
-          const message = JSON.parse(m)
-          if (message.type !== 'notification') return
-          this.emit('message', JSON.stringify({
-            target: accountId,
-            value: message.value
-          }))
-        })
-        this.connections[accountId] = conn
+        this.connections[accountId] = await this.createConnection(accountId)
       }
     })
     // registry message handler
