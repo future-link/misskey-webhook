@@ -4,7 +4,7 @@ import bodyParser from 'koa-bodyparser'
 import webhook from './webhook'
 
 import { callAPI, denyNonAuthorized, Logger } from '../tools'
-import { Account, Token } from '../models'
+import { Account, Token } from '../../models'
 
 const router = new Router()
 const logger = new Logger()

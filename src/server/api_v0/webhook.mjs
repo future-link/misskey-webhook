@@ -1,8 +1,8 @@
 import Router from 'koa-router'
 import mongoose from 'mongoose'
 
-import createRedisClient from '../db/redis'
-import { OutgoingWebhook } from '../models'
+import createRedisClient from '../../db/redis'
+import { OutgoingWebhook } from '../../models'
 import { denyNonAuthorized } from '../tools'
 
 const router = new Router()
