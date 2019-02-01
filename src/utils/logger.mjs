@@ -1,4 +1,5 @@
 import util from 'util'
+import config from '../config'
 
 export default class Logger {
   constructor(name) {
