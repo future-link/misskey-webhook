@@ -20,7 +20,7 @@ export default class {
 
       const { targetId, notification: value } = message
 
-      logger.log(`#${targetId} | notification #${value.id} incomming`)
+      logger.log(`#${targetId} | notification #${value._id} incomming`)
 
       delete value.cursor
       delete value.isRead
