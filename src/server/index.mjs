@@ -1,5 +1,3 @@
-import path from 'path'
-
 import Koa from 'koa'
 import Router from 'koa-router'
 import serve from 'koa-static'

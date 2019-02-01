@@ -1,12 +1,10 @@
 import Router from 'koa-router'
 import mongoose from 'mongoose'
 
-import createRedisClient from '../../db/redis'
 import { OutgoingWebhook } from '../../models'
 import { denyNonAuthorized } from '../tools'
 
 const router = new Router()
-const redis = createRedisClient()
 
 router.get('/outgoings', async ctx => {
   denyNonAuthorized(ctx)
@@ -25,12 +23,6 @@ router.post('/outgoings', async ctx => {
   })
 
   await oh.save()
-  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
-    type: 'add',
-    id: oh._id.toString(),
-    account: ctx.state.account._id.toString(),
-    document: oh.toObject()
-  }))
 
   ctx.status = 204
 })
@@ -50,11 +42,6 @@ router.delete('/outgoings/:id', async ctx => {
   if (!oh.account.equals(ctx.state.account._id)) ctx.throw(...ENOENT)
 
   await oh.remove()
-  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
-    type: 'delete',
-    id,
-    account: ctx.state.account._id.toString()
-  }))
 
   ctx.status = 204
 })
@@ -79,12 +66,6 @@ router.put('/outgoings/:id', async ctx => {
   oh.uri = ctx.request.body.uri
 
   await oh.save()
-  redis.publish('mw:events:webhooks:outgoings', JSON.stringify({
-    type: 'update',
-    id,
-    account: ctx.state.account._id.toString(),
-    document: oh.toObject()
-  }))
 
   ctx.status = 204
 })
