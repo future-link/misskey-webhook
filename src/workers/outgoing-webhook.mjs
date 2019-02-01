@@ -18,7 +18,7 @@ export default class {
     redis.on('message', async (_, payload) => {
       const message = JSON.parse(payload)
 
-      const { targetId, value } = message
+      const { targetId, notification: value } = message
 
       logger.log(`#${targetId} | notification #${value.id} incomming`)
 
