@@ -1,4 +1,3 @@
-import EventEmitter from 'events'
 import request from 'request-promise-native'
 import requestErrors from 'request-promise-native/errors'
 
