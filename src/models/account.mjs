@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import uuid from 'uuid/v4'
 
 import db from '../db/mongodb'
 

@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 mongoose.Promise = global.Promise
 
-import config from '../../config'
+import config from '../config'
 
 const db = mongoose.createConnection(config.mongodb, {
   useMongoClient: true,
