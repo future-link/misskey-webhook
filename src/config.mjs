@@ -1,9 +1,3 @@
-import dotenv from 'dotenv-safe'
-
-dotenv.load({
-  allowEmptyValues: true
-})
-
 const validator = config => {
   const errors = []
   if (!config.port) errors.push('[MW_MONGODB_URI] must set an application standby port.')

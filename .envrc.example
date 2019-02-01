@@ -1,0 +1,8 @@
+export MW_MONGODB_URI=
+export MW_API_URI=
+export MW_API_KEY=
+export MW_PORT=
+# non required variables
+export MW_REDIS_URI=
+# if true, flag an app.proxy variable
+export MW_PROXY=
